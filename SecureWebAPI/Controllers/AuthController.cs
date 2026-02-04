@@ -28,5 +28,19 @@ namespace SecureWebAPI.Controllers
             }
             return Ok(result);
         }
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var result = await _authServices.LoginAsync(model);
+            if (!result.IsAuthantecated)
+            {
+                return BadRequest(result.Message);
+            }
+            return Ok(result);
+        }
     }
 }

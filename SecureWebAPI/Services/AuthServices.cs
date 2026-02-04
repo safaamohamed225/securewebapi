@@ -18,6 +18,7 @@ namespace SecureWebAPI.Services
             _userManager = userManager;
             _jwt = jwt.Value;
         }
+
         public async Task<AuthModel> RegisterAsync(RegisterModel model)
         {
             if (await _userManager.FindByEmailAsync(model.Email) is not null)
@@ -57,7 +58,31 @@ namespace SecureWebAPI.Services
                 Message = "User registered successfully!"
             };
         }
+        public async Task<AuthModel> LoginAsync(LoginModel model)
+        {
+            var authModel = new AuthModel();
 
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user is null || !await _userManager.CheckPasswordAsync(user, model.Password)) {
+
+                authModel.Message = "Email or Password is not correct!";
+
+                return authModel;
+            }
+
+            var jwtSecurityToken = await CreateJwtToken(user);
+            var roles = await _userManager.GetRolesAsync(user);
+
+            authModel.Email = user.Email;
+            authModel.Username = user.UserName;
+            authModel.ExpiresOn = jwtSecurityToken.ValidTo;
+            authModel.Roles = roles.ToList();
+            authModel.Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
+            authModel.IsAuthantecated = true;
+
+            return authModel;
+        }
         private async Task<JwtSecurityToken> CreateJwtToken(ApplicationUser user)
         {
             var userClaims = await _userManager.GetClaimsAsync(user);
