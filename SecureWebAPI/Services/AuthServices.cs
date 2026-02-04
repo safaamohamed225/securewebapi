@@ -24,7 +24,7 @@ namespace SecureWebAPI.Services
             {
                 return new AuthModel { Message = "Email is already registered!" };
             }
-            if (await _userManager.FindByNameAsync(model.Email) is not null)
+            if (await _userManager.FindByNameAsync(model.Username) is not null)
             {
                 return new AuthModel { Message = "Username is already registered!" };
             }
