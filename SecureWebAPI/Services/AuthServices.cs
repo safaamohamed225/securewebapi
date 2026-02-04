@@ -12,11 +12,13 @@ namespace SecureWebAPI.Services
     public class AuthServices : IAuthServices
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly JWT _jwt;
-        public AuthServices(UserManager<ApplicationUser> userManager, IOptions<JWT> jwt)
+        public AuthServices(UserManager<ApplicationUser> userManager,  IOptions<JWT> jwt, RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _jwt = jwt.Value;
+            _roleManager = roleManager;
         }
 
         public async Task<AuthModel> RegisterAsync(RegisterModel model)
@@ -82,6 +84,16 @@ namespace SecureWebAPI.Services
             authModel.IsAuthantecated = true;
 
             return authModel;
+        }
+        public async Task<string> AddRoleAsync(AddRoleModel model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user is null || !await _roleManager.RoleExistsAsync(model.RoleName))
+                return "User or Role is not found!";
+            if (await _userManager.IsInRoleAsync(user, model.RoleName))
+                return "User already assigned to this role!";
+            var result = await _userManager.AddToRoleAsync(user, model.RoleName);
+            return result.Succeeded ? "Role added to user successfully!" : "Something went wrong!";
         }
         private async Task<JwtSecurityToken> CreateJwtToken(ApplicationUser user)
         {

@@ -18,7 +18,8 @@ namespace SecureWebAPI.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
-            if(!ModelState.IsValid) {
+            if (!ModelState.IsValid)
+            {
                 return BadRequest(ModelState);
             }
             var result = await _authServices.RegisterAsync(model);
@@ -28,6 +29,7 @@ namespace SecureWebAPI.Controllers
             }
             return Ok(result);
         }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
@@ -41,6 +43,21 @@ namespace SecureWebAPI.Controllers
                 return BadRequest(result.Message);
             }
             return Ok(result);
+        }
+
+        [HttpPost("add-role")]
+        public async Task<IActionResult> AddRole([FromBody] AddRoleModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var result = await _authServices.AddRoleAsync(model);
+            if (!string.IsNullOrEmpty(result))
+            {
+                return BadRequest(result);
+            }
+            return Ok(model);
         }
     }
 }
